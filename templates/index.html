@@ -1,53 +1,469 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <Link rel="stylesheet" href="{{url_for('static', filename='css/main.css')}}"></Link>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <title>Sentiment Analysis</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        .left-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .brand-section {
+            text-align: center;
+            color: white;
+            margin-bottom: 3rem;
+        }
+
+        .brand-logo {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .brand-logo i {
+            font-size: 3rem;
+            color: white;
+        }
+
+        .brand-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .brand-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.8;
+            font-weight: 300;
+        }
+
+        .stats-container {
+            display: flex;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            min-width: 140px;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .positive {
+            color: #4ade80;
+        }
+
+        .negative {
+            color: #f87171;
+        }
+
+        .right-panel {
+            flex: 1;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .header {
+            padding: 2rem 2rem 0 2rem;
+            flex-shrink: 0;
+        }
+
+        .header h2 {
+            color: #1f2937;
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: #6b7280;
+            font-size: 1rem;
+        }
+
+        .input-section {
+            padding: 1rem 2rem 2rem 2rem;
+            flex-shrink: 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .form-group {
+            position: relative;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #374151;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .textarea-wrapper {
+            position: relative;
+        }
+
+        .form-textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            resize: vertical;
+            background: #f9fafb;
+        }
+
+        .form-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .reviews-section {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+            background: #f8fafc;
+        }
+
+        .reviews-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            color: #374151;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            background: #f8fafc;
+            padding-bottom: 0.5rem;
+            z-index: 10;
+        }
+
+        .review-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .review-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .review-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .review-text {
+            color: #4b5563;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .floating-elements {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .floating-circle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: float-random 15s ease-in-out infinite;
+        }
+
+        .circle-1 {
+            width: 60px;
+            height: 60px;
+            top: 20%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .circle-2 {
+            width: 40px;
+            height: 40px;
+            top: 60%;
+            left: 20%;
+            animation-delay: 2s;
+        }
+
+        .circle-3 {
+            width: 80px;
+            height: 80px;
+            top: 40%;
+            left: 80%;
+            animation-delay: 4s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @keyframes float-random {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(20px, -20px) rotate(90deg); }
+            50% { transform: translate(-10px, 20px) rotate(180deg); }
+            75% { transform: translate(-20px, -10px) rotate(270deg); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .left-panel {
+                min-height: 40vh;
+                border-right: none;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+                flex-shrink: 0;
+            }
+            
+            .right-panel {
+                height: 60vh;
+            }
+            
+            .stats-container {
+                flex-direction: row;
+                justify-content: center;
+                gap: 1rem;
+            }
+            
+            .stat-card {
+                min-width: 120px;
+                padding: 1rem;
+            }
+            
+            .brand-title {
+                font-size: 2rem;
+            }
+
+            .header {
+                padding: 1.5rem 1.5rem 0 1.5rem;
+            }
+
+            .input-section {
+                padding: 1rem 1.5rem 1.5rem 1.5rem;
+            }
+
+            .reviews-section {
+                padding: 1.5rem;
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #9ca3af;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: #6b7280;
+        }
+
+        .empty-state p {
+            font-size: 0.9rem;
+        }
+    </style>
 </head>
 <body>
-
-    <div class="split left">
-        <div class="centered">
-            <img src="../static/products/prod1.png" alt="">
-        </div>
+    <div class="floating-elements">
+        <div class="floating-circle circle-1"></div>
+        <div class="floating-circle circle-2"></div>
+        <div class="floating-circle circle-3"></div>
     </div>
 
+    <div class="container">
+        <div class="left-panel">
+            <div class="brand-section">
+                <div class="brand-logo">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <h1 class="brand-title">SentiMind</h1>
+                <p class="brand-subtitle">AI-Powered Sentiment Analysis</p>
+            </div>
 
-    <div class="split right">
-        <div class="container mt-5 mb-5">
-            <div class="d-flex justify-content-center row">
-                <div class="d-flex flex-column col-md-8">
-                    <div>
-                        <label for="">Positive Sentiments : {{ data.positive }}</label>
-                    </div>
-                    <div>
-                        <label for="">Negative Sentiments : {{ data.negative }}</label>
-                    </div>
-                    <div>
-                        <form method="post">
-                          <textarea name="text"></textarea>
-                          <input type="submit">
-                        </form>
-                    </div>
-
-                    <div class="coment-bottom bg-white p-2 px-4">
-                        {% for review in data.reviews %}
-                        <hr/>
-                          <div
-                              class="commented-section mt-2">
-                              <div class="d-flex flex-row align-items-center commented-user">
-                                  </div>
-                                  <div class="text-nowrap bd-highlight"><span>{{ review }}</span></div>
-                                  <hr/>
-                        {% endfor %}
-                      </div>
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-number positive">{{ data.positive if data else '0' }}</div>
+                    <div class="stat-label positive">Positive</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number negative">{{ data.negative if data else '0' }}</div>
+                    <div class="stat-label negative">Negative</div>
                 </div>
             </div>
         </div>
-    </div>
 
+        <div class="right-panel">
+            <div class="header">
+                <h2>Analyze Your Text</h2>
+                <p>Enter your text below to get instant sentiment analysis powered by advanced AI algorithms.</p>
+            </div>
+
+            <div class="input-section">
+                <form method="post">
+                    <div class="form-group">
+                        <label for="text" class="form-label">
+                            <i class="fas fa-edit"></i> Your Text
+                        </label>
+                        <div class="textarea-wrapper">
+                            <textarea 
+                                name="text" 
+                                id="text" 
+                                class="form-textarea" 
+                                placeholder="Type your text here for sentiment analysis..."
+                                required
+                            ></textarea>
+                        </div>
+                    </div>
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-magic"></i>
+                        Analyze Sentiment
+                    </button>
+                </form>
+            </div>
+
+            <div class="reviews-section">
+                <div class="reviews-header">
+                    <i class="fas fa-comments"></i>
+                    <span>Analysis History</span>
+                </div>
+
+                {% if data and data.reviews %}
+                    {% for review in data.reviews %}
+                    <div class="review-item">
+                        <div class="review-text">{{ review }}</div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-file-alt"></i>
+                        <h3>No analysis yet</h3>
+                        <p>Your analyzed texts will appear here once you start using the tool.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 </body>
 </html>
